@@ -1,0 +1,146 @@
+package com.qualcomm.ftcrobotcontroller.opmodes;
+
+import com.qualcomm.ftccommon.DbgLog;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.LightSensor;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+
+/**
+ * Created by Tristan on 10/17/2015.
+ */
+public class AutonomousRed extends LinearOpMode
+{
+
+    DcMotor motorRF;//Declares name of DcMotors
+    DcMotor motorLF;
+    DcMotor motorRB;
+    DcMotor motorLB;
+
+    ColorSensor RGB;
+    TouchSensor touchSensor;
+
+    int RB = 1;
+
+    Servo servoPeople;
+
+    @Override
+    public void runOpMode() throws InterruptedException
+    {
+        motorRF = hardwareMap.dcMotor.get("motorRF");//sets DcMotors to type of motor
+        motorLF = hardwareMap.dcMotor.get("motorLF");
+        motorRB = hardwareMap.dcMotor.get("motorRB");
+        motorLB = hardwareMap.dcMotor.get("motorLB");
+        servoPeople = hardwareMap.servo.get("servoPeople");
+
+        motorLB.setDirection(DcMotor.Direction.REVERSE);//changes left wheels so that they turn correctly
+        motorLF.setDirection(DcMotor.Direction.REVERSE);
+
+        RGB = hardwareMap.colorSensor.get("RGB");
+        //servo = hardwareMap.servo.get("servo");
+        touchSensor = hardwareMap.touchSensor.get("touchSensor");
+        //opticalDistanceSensor = hardwareMap.opticalDistanceSensor.get("sensor_distance");
+
+        waitForStart();
+
+        sleep(2500);
+
+        bothWheels(0, 1);//Left until at desired position
+        sleep(900);
+
+        bothWheels(1,1);
+        sleep(250);
+
+        int inCase = 0;
+        while(RGB.alpha() < 9 && inCase < 750)
+        {
+            sleep(10);
+            inCase += 1;
+        }
+//        while(!(RGB.alpha() < 13) && inCase <= 2500)
+//        {
+//            if (RGB.alpha() >= 9)
+//            {
+//                bothWheels(-1, -1);
+//            }
+//            else
+//            {
+//                bothWheels(-1, 1);
+//            }
+//            sleep(1);
+//            inCase++;
+//        }
+//        if(inCase >= 2500)
+//        inCase = 5000;
+//        else
+//        {
+            bothWheels(-1, 1);//Left 90 degrees
+            sleep(700);
+            bothWheels(1, 1);
+            sleep(1000);
+            if(touchSensor.isPressed())
+            {
+                if (RGB.alpha() >= 13)
+                {
+                    servoPeople.setPosition(1);
+                    stops();
+                }
+                else
+                {
+                    bothWheels(-1, -1);
+                    sleep(500);
+                    bothWheels(1, -1);//Right 90 degrees
+                    sleep(700);
+                    bothWheels(1, 1);
+
+                    for(int i = 0; i < 300; i++)
+                    {
+                        sleep(10);
+                        if (RGB.alpha() >= 13)
+                        {
+                            bothWheels(-1, 1);//Left 90 degrees
+                            sleep(700);
+                            bothWheels(1, 1);
+                            sleep(750);
+
+                            if(touchSensor.isPressed())
+                            servoPeople.setPosition(1);
+
+                            stops();
+                            i = 300;
+                        }
+                    }
+                }
+            }
+//        }
+        stops();
+    }
+    private void bothWheels(double x, double y)
+    {
+        leftWheels(x);
+        rightWheels(y);
+    }
+    private void rightWheels(double x)
+    {
+        float y = (float) x;
+        motorRF.setPower(y);
+        motorRB.setPower(y);
+    }
+    private void leftWheels(double x)
+    {
+        float y = (float) x;
+        motorLF.setPower(y);
+        motorLB.setPower(y);
+    }
+    private void stops()
+    {
+        bothWheels(0, 0);
+    }
+    private void redAuto()
+    {
+
+    }
+}
